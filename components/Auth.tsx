@@ -35,6 +35,21 @@
          setLoading(false);
        };
 
+       const handleSignOut = async () => {
+         setLoading(true);
+         setError(null);
+
+         const { error } = await supabase.auth.signOut();
+         if (error) {
+           setError(error.message);
+         } else {
+           alert('Signed out successfully!');
+           setEmail('');
+           setPassword('');
+         }
+         setLoading(false);
+       };
+
        return (
          <div className="p-4">
            <h2 className="text-xl font-bold mb-4">Sign In / Sign Up</h2>
@@ -67,6 +82,13 @@
                className="p-2 bg-green-500 text-white rounded disabled:bg-gray-400"
              >
                {loading ? 'Loading...' : 'Sign Up'}
+             </button>
+             <button
+               onClick={handleSignOut}
+               disabled={loading}
+               className="p-2 bg-red-500 text-white rounded disabled:bg-gray-400"
+             >
+               {loading ? 'Loading...' : 'Sign Out'}
              </button>
            </div>
          </div>
