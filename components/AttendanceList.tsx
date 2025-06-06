@@ -41,6 +41,23 @@
          };
 
          fetchRecords();
+
+         // Set up real-time subscription
+         const subscription = supabase
+           .channel('attendance-changes')
+           .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'attendance' }, (payload) => {
+             const newRecord = payload.new as AttendanceRecord;
+             const { data: { user } } = supabase.auth.getUser();
+             if (user && newRecord.user_id === user.id) {
+               setRecords((prev) => [newRecord, ...prev]);
+             }
+           })
+           .subscribe();
+
+         // Cleanup subscription on unmount
+         return () => {
+           subscription.unsubscribe();
+         };
        }, []);
 
        if (loading) return <p>Loading...</p>;
