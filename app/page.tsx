@@ -1,34 +1,47 @@
 'use client';
 
-  import { useState, useEffect } from 'react';
-  import { supabase } from '../utils/supabase';
-  import AttendanceForm from '../components/AttendanceForm';
-  import AttendanceList from '../components/AttendanceList';
-  import Auth from '../components/Auth';
+   import { useState, useEffect } from 'react';
+   import { supabase } from '../utils/supabase';
+   import AttendanceForm from '../components/AttendanceForm';
+   import AttendanceList from '../components/AttendanceList';
+   import Auth from '../components/Auth';
 
-  export default function Home() {
-    const [user, setUser] = useState<any>(null);
+   export default function Home() {
+     const [user, setUser] = useState<any>(null);
+     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-      const fetchUser = async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-        setUser(user);
-      };
-      fetchUser();
-    }, []);
+     useEffect(() => {
+       const fetchUser = async () => {
+         const { data: { user } } = await supabase.auth.getUser();
+         setUser(user);
+         setLoading(false);
+       };
+       fetchUser();
 
-    return (
-      <main className="container mx-auto p-4">
-        <h1 className="text-2xl font-bold mb-4">Attendance System</h1>
-        <Auth />
-        {user ? (
-          <>
-            <AttendanceForm />
-            <AttendanceList />
-          </>
-        ) : (
-          <p>Please sign in to log or view attendance.</p>
-        )}
-      </main>
-    );
-  }
+       const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+         setUser(session?.user ?? null);
+         setLoading(false);
+       });
+
+       return () => {
+         authListener.subscription.unsubscribe();
+       };
+     }, []);
+
+     if (loading) return <p>Loading...</p>;
+
+     return (
+       <main className="container mx-auto p-4">
+         <h1 className="text-2xl font-bold mb-4">Attendance System</h1>
+         <Auth />
+         {user ? (
+           <>
+             <AttendanceForm />
+             <AttendanceList />
+           </>
+         ) : (
+           <p>Please sign in to log or view attendance.</p>
+         )}
+       </main>
+     );
+   }
