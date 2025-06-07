@@ -12,7 +12,8 @@
 
      useEffect(() => {
        const fetchUser = async () => {
-         const { data: { user } } = await supabase.auth.getUser();
+         const { data: { user }, error } = await supabase.auth.getUser();
+         if (error) console.error('Error fetching user:', error);
          setUser(user);
          setLoading(false);
        };
